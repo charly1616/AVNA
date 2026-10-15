@@ -11,6 +11,7 @@ import { requireApiKey } from "./middleware/requireApiKey.js";
 import { notFound } from "./middleware/notFound.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import authRouter from "./routes/auth.routes.js";
+import activityRouter from "./routes/activity.routes.js";
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -54,6 +55,7 @@ app.get("/healthz", (_req, res) => res.json({ ok: true, env: ENV.nodeEnv }));
 
 // API routes
 app.use("/api/auth", authRouter);
+app.use("/api/activities", activityRouter);
 
 // Serve built frontend in production
 if (ENV.isProduction) {

@@ -13,7 +13,7 @@ const icons = [
   { value: "brain", label: "Pensamiento" },
 ];
 
-export function ActivityEditModal({ open, activity, onClose, onSave }) {
+export function ActivityEditModal({ open, activity, onClose, onSave, saving = false }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [color, setColor] = useState(colors[0]);
@@ -111,9 +111,9 @@ export function ActivityEditModal({ open, activity, onClose, onSave }) {
           </div>
 
           <footer className="sticky bottom-0 mt-2 flex shrink-0 justify-end gap-2 bg-[#fbfbf5] py-4 pb-[calc(16px+env(safe-area-inset-bottom))] sm:pb-6">
-            <button type="button" onClick={onClose} className="min-h-12 flex-1 rounded-full border border-[#e4ebdf] bg-white px-[18px] font-extrabold text-[#006b4b] transition hover:bg-[#f2f7ef] active:scale-[.97] sm:flex-none">Cancelar</button>
-            <button type="submit" className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[#006b4b] px-5 font-extrabold text-white shadow-[0_8px_20px_rgba(0,107,75,0.12)] transition hover:bg-[#00583f] active:scale-[.97] focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-[#91c83e] sm:flex-none">
-              <ManageIcon name="check" /> Guardar
+            <button type="button" onClick={onClose} disabled={saving} className="min-h-12 flex-1 rounded-full border border-[#e4ebdf] bg-white px-[18px] font-extrabold text-[#006b4b] transition hover:bg-[#f2f7ef] active:scale-[.97] disabled:cursor-wait disabled:opacity-60 sm:flex-none">Cancelar</button>
+            <button type="submit" disabled={saving} className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[#006b4b] px-5 font-extrabold text-white shadow-[0_8px_20px_rgba(0,107,75,0.12)] transition hover:bg-[#00583f] active:scale-[.97] focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-[#91c83e] disabled:cursor-wait disabled:opacity-60 sm:flex-none">
+              <ManageIcon name="check" /> {saving ? "Guardando..." : "Guardar"}
             </button>
           </footer>
         </form>

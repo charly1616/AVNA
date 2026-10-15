@@ -9,3 +9,8 @@ export const AUTH_ENDPOINTS = {
   LOGOUT: "/auth/logout",
   ME: "/auth/me",
 };
+
+export const ACTIVITY_ENDPOINTS = {
+  LIST: "/activities",
+  DETAIL: (id) => `/activities/${encodeURIComponent(id)}`,
+};

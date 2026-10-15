@@ -1,30 +1,42 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 import ActivityCard from "../components/manage/ActivityCard.jsx";
 import ActivityEditModal from "../components/manage/ActivityEditModal.jsx";
 import ManageIcon from "../components/manage/ManageIcon.jsx";
 import TeacherHeader from "../components/layout/TeacherHeader.jsx";
 import PageDecorations from "../components/layout/PageDecorations.jsx";
-
-const initialActivities = [
-  { id: 1, title: "Exploradores de palabras", description: "Juegos para ampliar vocabulario", color: "#087b55", icon: "spell", active: true, link: "https://avna.example/actividades/exploradores-de-palabras" },
-  { id: 2, title: "Reto matemático", description: "Desafíos para pensar y resolver", color: "#f4c928", icon: "calculator", active: true, link: "https://avna.example/actividades/reto-matematico" },
-  { id: 3, title: "Laboratorio creativo", description: "Experimenta y crea algo nuevo", color: "#91c83e", icon: "palette", active: true, link: "https://avna.example/actividades/laboratorio-creativo" },
-  { id: 4, title: "Comprensión lectora", description: "Lee, interpreta y descubre", color: "#8bc9a2", icon: "book", active: true, link: "https://avna.example/actividades/comprension-lectora" },
-  { id: 5, title: "Misión sistema solar", description: "Explora planetas, órbitas y curiosidades del espacio", color: "#4779b8", icon: "brain", active: true, link: "https://avna.example/actividades/mision-sistema-solar" },
-  { id: 6, title: "Palabras viajeras", description: "Construye frases y descubre nuevas palabras", color: "#db7659", icon: "spell", active: false, link: "https://avna.example/actividades/palabras-viajeras" },
-  { id: 7, title: "Pequeños científicos", description: "Prueba hipótesis con experimentos sencillos", color: "#7e65a8", icon: "flask", active: true, link: "https://avna.example/actividades/pequenos-cientificos" },
-  { id: 8, title: "Desafío de patrones", description: "Encuentra la regla y completa cada secuencia", color: "#d7a72e", icon: "puzzle", active: true, link: "https://avna.example/actividades/desafio-de-patrones" },
-  { id: 9, title: "Cuentos en equipo", description: "Crea una historia entre todos, paso a paso", color: "#3e9a82", icon: "book", active: false, link: "https://avna.example/actividades/cuentos-en-equipo" },
-  { id: 10, title: "Ideas brillantes", description: "Preguntas para observar, imaginar y compartir", color: "#e5a943", icon: "bulb", active: true, link: "https://avna.example/actividades/ideas-brillantes" },
-  { id: 11, title: "Fracciones en acción", description: "Resuelve situaciones cotidianas con fracciones", color: "#4481a5", icon: "calculator", active: true, link: "https://avna.example/actividades/fracciones-en-accion" },
-  { id: 12, title: "Taller de inventos", description: "Diseña una solución y presenta tu prototipo", color: "#bf668e", icon: "palette", active: false, link: "https://avna.example/actividades/taller-de-inventos" },
-];
+import activityService from "../api/activity.service.js";
 
 export function ManagePage() {
-  const [activities, setActivities] = useState(initialActivities);
+  const navigate = useNavigate();
+  const [activities, setActivities] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingActivity, setEditingActivity] = useState(null);
   const [toast, setToast] = useState("");
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setIsLoading(true);
+
+    activityService.list({ signal: controller.signal })
+      .then(({ activities: loadedActivities }) => {
+        setActivities(loadedActivities);
+        setLoadError("");
+      })
+      .catch((error) => {
+        if (error.code !== "ERR_CANCELED") {
+          setLoadError(error.response?.data?.message || "No se pudieron cargar las actividades.");
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [reloadKey]);
 
   useEffect(() => {
     if (!toast) return undefined;
@@ -34,50 +46,56 @@ export function ManagePage() {
 
   const closeModal = () => {
     setModalOpen(false);
-    setEditingActivity(null);
   };
 
   const openNewActivity = () => {
-    setEditingActivity(null);
     setModalOpen(true);
   };
 
   const openEditActivity = (activity) => {
-    setEditingActivity(activity);
-    setModalOpen(true);
+    navigate(`/manage/${encodeURIComponent(activity.id)}/edit`);
   };
 
-  const saveActivity = (values) => {
-    if (editingActivity) {
-      setActivities((current) => current.map((item) => item.id === editingActivity.id ? { ...item, ...values } : item));
-      setToast("Actividad actualizada correctamente.");
+  const saveActivity = async (values) => {
+    setIsSaving(true);
+    try {
+      const slug = values.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      const activity = await activityService.create({
+        ...values,
+        active: true,
+        link: `https://avna.example/actividades/${slug || "nueva-actividad"}`,
+      });
+      setActivities((current) => [activity, ...current]);
+      setToast("Nueva actividad creada.");
       closeModal();
-      return;
+    } catch (error) {
+      setToast(error.response?.data?.message || "No se pudo guardar la actividad.");
+    } finally {
+      setIsSaving(false);
     }
-
-    const slug = values.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-    const activity = {
-      id: Date.now(),
-      ...values,
-      active: true,
-      link: `https://avna.example/actividades/${slug || "nueva-actividad"}`,
-    };
-    setActivities((current) => [activity, ...current]);
-    setToast("Nueva actividad creada.");
-    closeModal();
   };
 
-  const toggleActivity = (activity) => {
+  const toggleActivity = async (activity) => {
     const active = !activity.active;
-    setActivities((current) => current.map((item) => item.id === activity.id ? { ...item, active } : item));
-    setToast(active ? "Actividad activada." : "Actividad desactivada.");
+    try {
+      const updatedActivity = await activityService.update(activity.id, { active });
+      setActivities((current) => current.map((item) => item.id === updatedActivity.id ? updatedActivity : item));
+      setToast(active ? "Actividad activada." : "Actividad desactivada.");
+    } catch (error) {
+      setToast(error.response?.data?.message || "No se pudo cambiar el estado de la actividad.");
+    }
   };
 
-  const deleteActivity = (activity) => {
+  const deleteActivity = async (activity) => {
     const confirmed = window.confirm(`¿Eliminar "${activity.title}"? Esta acción no se puede deshacer.`);
     if (!confirmed) return;
-    setActivities((current) => current.filter((item) => item.id !== activity.id));
-    setToast("Actividad eliminada.");
+    try {
+      await activityService.remove(activity.id);
+      setActivities((current) => current.filter((item) => item.id !== activity.id));
+      setToast("Actividad eliminada.");
+    } catch (error) {
+      setToast(error.response?.data?.message || "No se pudo eliminar la actividad.");
+    }
   };
 
   const shareActivity = async (activity) => {
@@ -97,7 +115,7 @@ export function ManagePage() {
 
   return (
     <>
-      <main className="relative isolate h-[100svh] overflow-x-clip overflow-y-auto overscroll-y-contain bg-[#fbfbf6] text-[#124d3b] [background-image:radial-gradient(circle_at_0%_0%,#e1efdc_0,transparent_92%)]">
+      <main className="relative isolate h-[100svh] overflow-x-clip overflow-y-auto overscroll-y-contain bg-[#fbfbf6] text-[#124d3b] [background-image:radial-gradient(circle_at_0%_0%,#e1efdc_0,transparent_22%)]">
         <PageDecorations footer="waves" />
         <TeacherHeader sticky />
 
@@ -121,7 +139,11 @@ export function ManagePage() {
             <span className="hidden text-[.82rem] text-[#718078] sm:inline">Administra tus actividades</span>
           </div>
 
-          {activities.length ? (
+          {isLoading ? (
+            <section role="status" className="rounded-2xl border border-[#e4ebdf] bg-white/80 px-5 py-10 text-center text-sm font-semibold text-[#718078]">
+              Cargando actividades...
+            </section>
+          ) : activities.length ? (
             <section aria-label="Actividades creadas" className="grid gap-[14px] lg:grid-cols-2 lg:gap-5">
               {activities.map((activity) => (
                 <ActivityCard
@@ -134,6 +156,13 @@ export function ManagePage() {
                 />
               ))}
             </section>
+          ) : loadError ? (
+            <section role="alert" className="rounded-2xl border border-[#e4ebdf] bg-white px-5 py-10 text-center">
+              <p className="font-extrabold">{loadError}</p>
+              <button type="button" onClick={() => setReloadKey((key) => key + 1)} className="mt-4 rounded-full bg-[#006b4b] px-5 py-2.5 text-sm font-extrabold text-white hover:bg-[#00583f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#91c83e]">
+                Reintentar
+              </button>
+            </section>
           ) : (
             <section className="rounded-[22px] border border-dashed border-[#c9ddc4] bg-white px-5 py-10 text-center">
               <ManageIcon name="folder" className="mx-auto h-8 w-8 text-[#91c83e]" />
@@ -145,7 +174,7 @@ export function ManagePage() {
 
       </main>
 
-      <ActivityEditModal open={modalOpen} activity={editingActivity} onClose={closeModal} onSave={saveActivity} />
+      <ActivityEditModal open={modalOpen} onClose={closeModal} onSave={saveActivity} saving={isSaving} />
 
       {toast && (
         <div role="status" aria-live="polite" className="fixed bottom-[calc(18px+env(safe-area-inset-bottom))] left-1/2 z-50 max-w-[calc(100%-32px)] -translate-x-1/2 rounded-[14px] bg-[#00583f] px-5 py-[13px] text-center text-sm font-bold text-white shadow-lg">

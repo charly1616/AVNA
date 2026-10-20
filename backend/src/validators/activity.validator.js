@@ -11,7 +11,7 @@ const activityFields = {
 
 export const createActivitySchema = z.object({
   ...activityFields,
-  link: activityFields.link.unwrap(),
+  link: activityFields.link,
 }).strict();
 
 export const updateActivitySchema = z.object(activityFields)
@@ -95,7 +95,7 @@ const conceptCardSchema = z.object({
 const conceptsQuestionSchema = z.object({
   ...commonQuestionFields,
   type: z.literal("concepts"),
-  concepts: z.array(conceptCardSchema).min(1).max(3),
+  concepts: z.array(conceptCardSchema).min(2).max(4),
 }).strict();
 
 const questionSchema = z.discriminatedUnion("type", [

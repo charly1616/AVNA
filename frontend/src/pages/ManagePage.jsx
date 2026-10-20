@@ -59,11 +59,9 @@ export function ManagePage() {
   const saveActivity = async (values) => {
     setIsSaving(true);
     try {
-      const slug = values.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
       const activity = await activityService.create({
         ...values,
         active: true,
-        link: `https://avna.example/actividades/${slug || "nueva-actividad"}`,
       });
       setActivities((current) => [activity, ...current]);
       setToast("Nueva actividad creada.");

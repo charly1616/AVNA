@@ -57,6 +57,7 @@ export const ENV = {
 
   jwtSecret: required("JWT_SECRET", { devFallback: "dev-only-insecure-secret" }),
   jwtExpiresIn: optional("JWT_EXPIRES_IN", "7d"),
+  activityLinkSecret: required("ACTIVITY_LINK_SECRET", { devFallback: "dev-only-insecure-activity-link-secret" }),
 
   cookie: {
     name: optional("COOKIE_NAME", "token"),

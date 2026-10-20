@@ -29,7 +29,7 @@ TeacherPortal/
 ```bash
 cd backend
 cp .env.example .env
-# Fill in MONGODB_URI, JWT_SECRET, API_KEY (optional)
+# Fill in MONGODB_URI, JWT_SECRET, ACTIVITY_LINK_SECRET, API_KEY (optional)
 npm install
 npm run dev
 ```
@@ -50,7 +50,7 @@ App runs at http://localhost:5173 (proxies /api to 4000)
 Use MongoDB Atlas (paste connection string in `MONGODB_URI`) or local `mongodb://127.0.0.1:27017/teacher_portal`.
 
 ## Environment variables
-See `backend/.env.example` for all required/optional variables. All env access is centralized in `backend/src/config/env.js`.
+See `backend/.env.example` for all required/optional variables. Set `ACTIVITY_LINK_SECRET` to a long, random secret in production; it is used only by the backend to generate hashed activity links and must never be included in frontend code. All env access is centralized in `backend/src/config/env.js`.
 
 ## How to extend (modular)
 - **Add fields:** Edit `backend/src/models/teacher.model.js`, update validators (`validators/auth.validator.js`), adjust service/controller if needed.

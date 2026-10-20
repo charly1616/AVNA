@@ -96,8 +96,8 @@ activityQuestionSchema.pre("validate", function validateQuestionType() {
     this.invalidate("pairs", "Matching questions require at least two pairs");
   }
 
-  if (this.type === "concepts" && (!this.concepts || this.concepts.length < 1 || this.concepts.length > 3)) {
-    this.invalidate("concepts", "Concept questions require between one and three cards");
+  if (this.type === "concepts" && (!this.concepts || this.concepts.length < 2 || this.concepts.length > 4)) {
+    this.invalidate("concepts", "Concept questions require between two and four cards");
   }
 });
 

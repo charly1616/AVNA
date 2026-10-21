@@ -11,7 +11,6 @@ const activityFields = {
 
 export const createActivitySchema = z.object({
   ...activityFields,
-  link: activityFields.link,
 }).strict();
 
 export const updateActivitySchema = z.object(activityFields)

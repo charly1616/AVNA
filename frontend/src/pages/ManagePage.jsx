@@ -96,19 +96,25 @@ export function ManagePage() {
     }
   };
 
-  const shareActivity = async (activity) => {
+  const copyText = async (text, message) => {
     try {
-      if (navigator.share) {
-        await navigator.share({ title: activity.title, text: `Mira esta actividad: ${activity.title}`, url: activity.link });
-      } else if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(activity.link);
-        setToast("Enlace copiado al portapapeles.");
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        setToast(message);
       } else {
-        window.prompt("Copia el enlace de la actividad:", activity.link);
+        window.prompt("Copia el texto:", text);
       }
     } catch (error) {
-      if (error?.name !== "AbortError") window.prompt("Copia el enlace de la actividad:", activity.link);
+      window.prompt("Copia el texto:", text);
     }
+  };
+
+  /**
+   * The link button copies only the code: that code is enough to open the
+   * quiz, on the code box of the quiz app or on /a/<code>.
+   */
+  const shareActivity = async (activity) => {
+    await copyText(activity.code, `Código "${activity.code}" copiado.`);
   };
 
   return (

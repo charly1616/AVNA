@@ -1,5 +1,5 @@
 import activityRepository from "../repositories/activity.repository.js";
-import createActivityLink from "./activityLink.js";
+import { buildActivityLink, createActivityCode, resolveActivityCode } from "./activityLink.js";
 
 class HttpError extends Error {
   constructor(status, message) {
@@ -8,11 +8,30 @@ class HttpError extends Error {
   }
 }
 
+/**
+ * Two activities with the same title would produce the same code, so a number
+ * is added until the code is free.
+ */
+const resolveUniqueCode = async (title) => {
+  const base = createActivityCode(title);
+
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    const code = attempt === 0 ? base : `${base}-${attempt + 1}`;
+    const existing = await activityRepository.findByCode(code);
+    if (!existing) return code;
+  }
+
+  throw new HttpError(409, "Could not generate a unique code for this activity");
+};
+
 export const activityService = {
   async create(teacherId, data) {
+    const code = await resolveUniqueCode(data.title);
+
     return activityRepository.create(teacherId, {
       ...data,
-      link: createActivityLink(data.title),
+      code,
+      link: buildActivityLink(code),
     });
   },
 
@@ -23,10 +42,17 @@ export const activityService = {
     });
 
     return {
-      activities: activities.map((activity) => ({
-        ...activity.toJSON(),
-        link: createActivityLink(activity.title),
-      })),
+      activities: await Promise.all(
+        activities.map(async (activity) => {
+          const code = await activityRepository.setCodeIfMissing(activity._id, resolveActivityCode(activity));
+
+          return {
+            ...activity.toJSON(),
+            code: code?.code ?? resolveActivityCode(activity),
+            link: buildActivityLink(code?.code ?? resolveActivityCode(activity)),
+          };
+        })
+      ),
       pagination: {
         page,
         limit,
@@ -39,13 +65,20 @@ export const activityService = {
   async get(teacherId, activityId) {
     const activity = await activityRepository.findByIdForTeacher(activityId, teacherId);
     if (!activity) throw new HttpError(404, "Activity not found");
-    return activity;
+
+    const code = resolveActivityCode(activity);
+
+    return { ...activity.toJSON(), code, link: buildActivityLink(code) };
   },
 
   async update(teacherId, activityId, changes) {
-    const updatedChanges = changes.title
-      ? { ...changes, link: createActivityLink(changes.title) }
-      : changes;
+    let updatedChanges = changes;
+
+    if (changes.title) {
+      const code = await resolveUniqueCode(changes.title);
+      updatedChanges = { ...changes, code, link: buildActivityLink(code) };
+    }
+
     const activity = await activityRepository.updateByIdForTeacher(activityId, teacherId, updatedChanges);
     if (!activity) throw new HttpError(404, "Activity not found");
     return activity;

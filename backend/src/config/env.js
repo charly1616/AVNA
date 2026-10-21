@@ -55,6 +55,9 @@ export const ENV = {
   // Empty string disables the x-api-key check entirely.
   apiKey: optional("API_KEY"),
 
+  // Where the public quiz app is served. The share link teachers copy points here.
+  quizAppUrl: optional("QUIZ_APP_URL", "http://localhost:5176"),
+
   jwtSecret: required("JWT_SECRET", { devFallback: "dev-only-insecure-secret" }),
   jwtExpiresIn: optional("JWT_EXPIRES_IN", "7d"),
   activityLinkSecret: required("ACTIVITY_LINK_SECRET", { devFallback: "dev-only-insecure-activity-link-secret" }),

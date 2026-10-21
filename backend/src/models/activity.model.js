@@ -155,6 +155,13 @@ const activitySchema = new mongoose.Schema(
       trim: true,
     },
 
+    code: {
+      type: String,
+      trim: true,
+      maxlength: 64,
+      default: undefined,
+    },
+
     active: {
       type: Boolean,
       default: true,
@@ -190,6 +197,7 @@ activitySchema.pre("validate", function validateUniqueQuestionIds() {
 });
 
 activitySchema.index({ teacher: 1, createdAt: -1, _id: -1 });
+activitySchema.index({ code: 1 }, { unique: true, sparse: true });
 
 export const Activity = mongoose.model("Activity", activitySchema);
 export default Activity;

@@ -12,6 +12,9 @@ export function ActivityCard({ activity, onEdit, onShare, onToggle, onDelete }) 
         <div className="contents sm:block sm:min-w-0">
           <h3 className="col-start-2 row-start-1 min-w-0 truncate text-[.9rem] font-extrabold leading-[1.3] sm:text-base">{activity.title}</h3>
           <p className="col-start-2 col-span-2 row-start-2 truncate text-xs text-[#718078] sm:mt-[5px] sm:text-[.83rem]">{activity.description || "Actividad de aprendizaje"}</p>
+          <p className="col-start-2 col-span-2 row-start-3 mt-2 font-mono text-[.72rem] font-bold text-[#17654d] sm:mt-2.5 sm:text-xs">
+            {activity.code}
+          </p>
           <span className={`col-start-3 row-start-1 inline-flex items-center justify-self-end gap-[7px] whitespace-nowrap text-[.68rem] font-extrabold sm:mt-[9px] sm:text-xs ${activity.active ? "text-[#117a3d]" : "text-[#718078]"}`}>
             <span className={`h-[9px] w-[9px] rounded-full ${activity.active ? "animate-pulse bg-[#1fae5a] motion-reduce:animate-none" : "bg-[#b9c2bb]"}`} />
             {activity.active ? "Activo" : "Inactivo"}
@@ -23,8 +26,8 @@ export function ActivityCard({ activity, onEdit, onShare, onToggle, onDelete }) 
         <button type="button" onClick={() => onEdit(activity)} title="Editar actividad" aria-label={`Editar ${activity.title}`} className="grid min-h-10 place-items-center text-[#006b4b] transition hover:bg-[#edf6e9] active:scale-[.97] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#006b4b] sm:flex sm:h-9 sm:min-h-9 sm:gap-2 sm:rounded-lg sm:px-2.5 sm:text-xs sm:font-bold lg:w-9 lg:justify-center lg:px-0">
           <ManageIcon name="edit" /> <span className="hidden sm:inline lg:hidden">Editar</span>
         </button>
-        <button type="button" onClick={() => onShare(activity)} title="Compartir actividad" aria-label={`Compartir ${activity.title}`} className="grid min-h-10 place-items-center border-l border-[#e4ebdf] text-[#665700] transition hover:bg-[#fff7d7] active:scale-[.97] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#806800] sm:flex sm:h-9 sm:min-h-9 sm:gap-2 sm:rounded-lg sm:border-0 sm:bg-[#fff7d7] sm:px-2.5 sm:text-xs sm:font-bold lg:w-9 lg:justify-center lg:px-0 lg:bg-transparent">
-          <ManageIcon name="link" /> <span className="hidden sm:inline lg:hidden">Compartir</span>
+        <button type="button" onClick={() => onShare(activity)} title="Copiar el código de la actividad" aria-label={`Copiar el código de ${activity.title}`} className="grid min-h-10 place-items-center border-l border-[#e4ebdf] text-[#665700] transition hover:bg-[#fff7d7] active:scale-[.97] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#806800] sm:flex sm:h-9 sm:min-h-9 sm:gap-2 sm:rounded-lg sm:border-0 sm:bg-[#fff7d7] sm:px-2.5 sm:text-xs sm:font-bold lg:w-9 lg:justify-center lg:px-0 lg:bg-transparent">
+          <ManageIcon name="link" /> <span className="hidden sm:inline lg:hidden">Código</span>
         </button>
         <button type="button" onClick={() => onToggle(activity)} title={activity.active ? "Desactivar actividad" : "Activar actividad"} aria-label={`${activity.active ? "Desactivar" : "Activar"} ${activity.title}`} className={`grid min-h-10 place-items-center border-l border-[#e4ebdf] transition active:scale-[.97] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#006b4b] sm:flex sm:h-9 sm:min-h-9 sm:gap-2 sm:rounded-lg sm:border-0 sm:px-2.5 sm:text-xs sm:font-bold lg:w-9 lg:justify-center lg:px-0 ${activity.active ? "text-[#006b4b] hover:bg-[#edf6e9] sm:bg-white lg:bg-transparent" : "text-[#0d7a3e] hover:bg-[#e2f3e8] sm:bg-[#eef8f1] lg:bg-transparent"}`}>
           <ManageIcon name={activity.active ? "pause" : "play"} /> <span className="hidden sm:inline lg:hidden">{activity.active ? "Desactivar" : "Activar"}</span>

@@ -15,11 +15,44 @@ Minimal, modular template for a **teacher login/register + home** page.
 - Home page (empty by design)
 - API key guard via `x-api-key` header (optional - disable by leaving API_KEY empty)
 
+## Public quiz API (students, no teacher session)
+Each activity has a **code** (e.g. `quiz-de-fundamentos-frontend`). The teacher sees it on
+the activity card, and the "Código" button copies it. That code alone opens the quiz:
+`http://localhost:5176/a/<code>` (or paste it in the code box of the quiz app).
+The lookup is tolerant: the code works in any case, the **title** of the activity works too
+("La célula") and the old links (`https://.../actividades/<code>`) still open the activity.
+An activity marked as inactive can also be opened, the quiz app only shows a notice.
+The backend never sends the expected answers to the browser: every answer is graded server side.
+
+A student registers with their **name only** (no password): `POST /api/public/students`.
+The token that comes back is kept by the browser and is used to start the attempts, so all
+the attempts of a student are gathered under the same student.
+
+| Method | Route | Purpose |
+|---|---|---|
+| `POST` | `/api/public/students` | Register a student by name -> returns the student id, name and token |
+| `GET` | `/api/public/students/me` | The student behind the token (header `x-student-token`) with their attempts |
+| `GET` | `/api/public/activities/:code` | Activity meta (title, description, question count) |
+| `GET` | `/api/public/activities/:code/questions` | Every question of the activity (no answer key) |
+| `GET` | `/api/public/activities/:code/questions/:number` | A single question, addressed by its number (1 based) |
+| `POST` | `/api/public/activities/:code/attempts` | Start an attempt (`studentToken` or `studentName`) - returns the attempt id and its token |
+| `PUT` | `/api/public/attempts/:attemptId/answers` | Log one answer (header `x-attempt-token`, body carries `questionNumber` or `questionId`) |
+| `POST` | `/api/public/attempts/:attemptId/submit` | Send the solution and get the score |
+| `GET` | `/api/public/attempts/:attemptId` | Attempt state (header `x-attempt-token`) |
+
+Supported question types: `abc` (multiple choice), `sort` (ordering), `lines` (matching)
+and `concepts` (open answer cards).
+
+The questions of an activity are built from a secret, so the same code always returns the
+same question numbers and ids. That way a question can be asked for by its number and the
+answer still matches the key of the attempt.
+
 ## Project layout
 ```
 TeacherPortal/
   backend/  (Express API)
-  frontend/ (React + Vite)
+  frontend/ (React + Vite, teacher portal)
+  frontend-quiz/ (React + Vite, public quiz app for students)
   package.json (root scripts)
 ```
 
@@ -46,7 +79,24 @@ npm run dev
 ```
 App runs at http://localhost:5173 (proxies /api to 4000)
 
-### 3) MongoDB
+### 3) Quiz app setup
+```bash
+cd frontend-quiz
+cp .env.example .env
+# VITE_API_BASE_URL=http://localhost:4000/api
+# VITE_API_KEY=  (if backend requires it)
+npm install
+npm run dev
+```
+App runs at http://localhost:5176 (proxies /api to 4000). Open an activity with
+`http://localhost:5176/a/<slug>`.
+
+To get a ready to try activity (teacher `demo` / `demo1234` with the four question types):
+```bash
+npm run seed --prefix backend
+```
+
+### 4) MongoDB
 Use MongoDB Atlas (paste connection string in `MONGODB_URI`) or local `mongodb://127.0.0.1:27017/teacher_portal`.
 
 ## Environment variables

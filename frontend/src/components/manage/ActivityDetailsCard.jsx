@@ -23,6 +23,11 @@ export function ActivityDetailsCard({ activity, saveError, onEdit }) {
                 {activity.active ? "Activa" : "Inactiva"}
               </span>
             </div>
+            <div className="mt-4 rounded-xl border border-dashed border-[#cfe0c9] bg-[#f7faf4] p-3">
+              <p className="text-[.7rem] font-extrabold uppercase tracking-wide text-[#718078]">Código de la actividad</p>
+              <p className="mt-1 break-all font-mono text-sm font-bold text-[#00583f]">{activity.code}</p>
+              <p className="mt-1 break-all text-xs text-[#718078]">{activity.link}</p>
+            </div>
           </div>
         </div>
         <button type="button" onClick={onEdit} className="inline-flex min-h-10 w-full shrink-0 items-center justify-center gap-2 rounded-lg border border-[#dce8d7] bg-[#f7faf4] px-4 text-sm font-extrabold text-[#006b4b] transition hover:bg-[#edf6e9] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006b4b] sm:w-auto">

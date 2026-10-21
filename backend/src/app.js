@@ -12,6 +12,7 @@ import { notFound } from "./middleware/notFound.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import authRouter from "./routes/auth.routes.js";
 import activityRouter from "./routes/activity.routes.js";
+import publicRouter from "./routes/public.routes.js";
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -56,6 +57,7 @@ app.get("/healthz", (_req, res) => res.json({ ok: true, env: ENV.nodeEnv }));
 // API routes
 app.use("/api/auth", authRouter);
 app.use("/api/activities", activityRouter);
+app.use("/api/public", publicRouter);
 
 // Serve built frontend in production
 if (ENV.isProduction) {

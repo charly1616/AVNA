@@ -104,7 +104,7 @@ export function ManagePage() {
       } else {
         window.prompt("Copia el texto:", text);
       }
-    } catch (error) {
+    } catch {
       window.prompt("Copia el texto:", text);
     }
   };

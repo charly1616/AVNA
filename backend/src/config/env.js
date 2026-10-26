@@ -40,13 +40,16 @@ export const ENV = {
 
   port: toNumber(process.env.PORT, 4000),
 
-  // CORS: allow a list of origins, including the common Vite dev ports.
+  // CORS: allowed origins. In development the common Vite ports are allowed
+  // automatically; in production only CLIENT_URL is trusted.
   clientUrls: optional(
     "CLIENT_URL",
-    "http://localhost:5173,http://localhost:5174,http://localhost:5175,http://127.0.0.1:5173,http://127.0.0.1:5174,http://127.0.0.1:5175"
+    isProduction
+      ? ""
+      : "http://localhost:5173,http://localhost:5174,http://localhost:5175,http://localhost:5176,http://127.0.0.1:5173,http://127.0.0.1:5174,http://127.0.0.1:5175,http://127.0.0.1:5176"
   )
     .split(",")
-    .map((url) => url.trim())
+    .map((url) => url.trim().replace(/\/+$/, ""))
     .filter(Boolean),
 
   mongodbUri: required("MONGODB_URI", { devFallback: "mongodb://127.0.0.1:27017/teacher_portal" }),

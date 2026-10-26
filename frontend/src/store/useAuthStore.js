@@ -7,7 +7,7 @@ import authService from "../api/auth.service.js";
  * This store handles initial session check (me) and auth:unauthorized events.
  */
 
-export const useAuthStore = create((set, get) => ({
+export const useAuthStore = create((set) => ({
   teacher: null,
   isAuthenticated: false,
   isLoading: true, // true until we finish the initial /auth/me call

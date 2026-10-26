@@ -18,6 +18,12 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+if (ENV.isProduction) {
+  // Behind Render/Railway/Nginx the real client IP arrives in X-Forwarded-For.
+  // Trusting one proxy keeps secure cookies and rate limits correct.
+  app.set("trust proxy", 1);
+}
+
 // Security & parsers
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(express.json({ limit: "5mb" }));
@@ -35,13 +41,16 @@ app.use(
 
       const allowedOrigins = new Set(ENV.clientUrls);
       const localhostPattern = /^http:\/\/(localhost|127\.0\.0\.1):\d+$/i;
+      const isLocalhost = !ENV.isProduction && localhostPattern.test(origin);
 
-      if (allowedOrigins.has(origin) || localhostPattern.test(origin)) {
+      if (allowedOrigins.has(origin.replace(/\/+$/, "")) || isLocalhost) {
         callback(null, true);
         return;
       }
 
-      callback(new Error("Not allowed by CORS"));
+      const error = new Error("Not allowed by CORS");
+      error.status = 403;
+      callback(error);
     },
     credentials: true,
     optionsSuccessStatus: 200,
@@ -63,7 +72,13 @@ app.use("/api/public", publicRouter);
 if (ENV.isProduction) {
   const frontendDist = path.resolve(__dirname, "../../frontend/dist");
   app.use(express.static(frontendDist));
-  app.get("*", (_req, res) => {
+  app.get("*", (req, res, next) => {
+    // Unknown API routes must keep returning JSON 404s, not the SPA shell.
+    if (req.path.startsWith("/api")) {
+      next();
+      return;
+    }
+
     res.sendFile(path.join(frontendDist, "index.html"));
   });
 }

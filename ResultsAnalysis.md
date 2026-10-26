@@ -210,8 +210,9 @@ Two grading facts matter for every chart:
 - **Data:** `answers.value.cards[].text`, `isCorrect`, and the snapshot `correct.answers`.
 - **Read it:** a blank rate is a comprehension signal; a high incorrect rate with good
   answers is a **grading** signal (synonyms are currently marked wrong because the
-  comparison is exact after normalization). Expect to add a manual review for these.
-  **Available now, with grading caveat.**
+  comparison is exact after normalization). Teachers can override the result from the
+  attempt detail in the results page (**Marcar correcta / incorrecta**), and the attempt
+  score plus every aggregate chart are recalculated. **Available now, with grading caveat.**
 
 ### 4.9 Unanswered rate per question
 - **Question it answers:** Where do students give up or run out of time?
@@ -355,8 +356,9 @@ Two grading facts matter for every chart:
 4. **Groups/classes** — there is no `group`/`section` field today. Without it, comparison
    charts (3.7, 6.2) can only be per student or per activity, not per class.
 5. **Concept grading** — exact-text comparison after normalization marks valid synonyms as
-   wrong. Either add keyword-based grading, a manual review queue, or display concepts
-   charts as "textual answers" rather than as correctness.
+   wrong. Teachers can now correct a concept answer manually from the attempt detail (the
+   score and aggregates update immediately); keyword-based grading or a review queue is
+   still the next step for bulk corrections.
 6. **Anonymous students** — `student` is nullable (`studentName` is always stored). Group
    unique students by `student` when present and fall back to `nameKey`-style normalization
    of `studentName`.

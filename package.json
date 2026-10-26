@@ -12,9 +12,12 @@
     "dev:frontend": "npm run dev --prefix frontend",
     "dev:quiz": "npm run dev --prefix frontend-quiz",
     "build": "npm run build --prefix frontend",
+    "build:quiz": "npm run build --prefix frontend-quiz",
+    "build:all": "npm run build --prefix frontend && npm run build --prefix frontend-quiz",
     "start": "npm run start --prefix backend",
     "lint": "npm run lint --prefix frontend",
     "lint:quiz": "npm run lint --prefix frontend-quiz",
+    "lint:all": "npm run lint --prefix frontend && npm run lint --prefix frontend-quiz",
     "seed": "npm run seed --prefix backend",
     "test": "npm test --prefix backend"
   },

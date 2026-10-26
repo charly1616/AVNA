@@ -100,7 +100,36 @@ npm run seed --prefix backend
 Use MongoDB Atlas (paste connection string in `MONGODB_URI`) or local `mongodb://127.0.0.1:27017/teacher_portal`.
 
 ## Environment variables
-See `backend/.env.example` for all required/optional variables. Set `ACTIVITY_LINK_SECRET` to a long, random secret in production; it is used only by the backend to generate hashed activity links and must never be included in frontend code. All env access is centralized in `backend/src/config/env.js`.
+See `backend/.env.example`, `frontend/.env.example`, `frontend-quiz/.env.example` and
+`backend_model/.env.example` for every required value. Set `ACTIVITY_LINK_SECRET` to a long,
+random secret in production; it is used only by the backend to generate hashed activity links
+and must never be included in frontend code. All env access is centralized in
+`backend/src/config/env.js`.
+
+## Sharing an activity
+The home page has a **Compartir examen** action. It lists the teacher activities and shows the
+public quiz link plus a QR code that can be copied or downloaded. Share links are built from
+`QUIZ_APP_URL`; in production point it to the public quiz deployment
+(`https://quiz.example.com`, so the link becomes `https://quiz.example.com/a/<code>`).
+
+## Production deployment
+1. **Backend env:** set `NODE_ENV=production`, `MONGODB_URI`, `JWT_SECRET`,
+   `ACTIVITY_LINK_SECRET`, `CLIENT_URL` (the teacher portal and quiz origins, comma separated)
+   and `QUIZ_APP_URL`. Set `COOKIE_SECURE=true` when serving over HTTPS. `API_KEY` is optional
+   but recommended.
+2. **Build both frontends:** `npm run build:all` (or `build` / `build:quiz` separately). With
+   `NODE_ENV=production` the backend serves `frontend/dist` and keeps returning JSON 404s for
+   unknown `/api` routes.
+3. **Deploy the quiz app:** serve `frontend-quiz/dist` as a static site with an SPA fallback to
+   `index.html` for `/a/<code>` links.
+4. **Start the API:** `npm start --prefix backend` (or run it under a process manager). Put it
+   behind a reverse proxy that sets `X-Forwarded-For`; the app trusts one proxy in production.
+5. **Answer verifier:** deploy `backend_model` separately (see its `.env.example`) and set
+   `VERIFIER_SERVICE_HOST` / `VERIFIER_SERVICE_PORT` in the backend. Open-answer checks fail
+   gracefully when the verifier is unreachable.
+6. **Frontend env:** set `VITE_API_BASE_URL=/api` when the portal is served by the same domain
+   as the API, or the full API URL when they are separate. `VITE_API_KEY` must match the
+   backend `API_KEY` when enabled.
 
 ## How to extend (modular)
 - **Add fields:** Edit `backend/src/models/teacher.model.js`, update validators (`validators/auth.validator.js`), adjust service/controller if needed.

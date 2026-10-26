@@ -1,8 +1,28 @@
+import { useState } from "react";
 import { Link } from "react-router";
 import { useAuthStore } from "../store/useAuthStore.js";
 import AVNATitle from "../components/AVNATitle.jsx";
 import TeacherHeader from "../components/layout/TeacherHeader.jsx";
 import PageDecorations from "../components/layout/PageDecorations.jsx";
+import ShareExamModal from "../components/share/ShareExamModal.jsx";
+
+const ShareGlyph = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    className="h-12 w-12 sm:h-14 sm:w-14 lg:h-20 lg:w-20"
+    stroke="currentColor"
+    strokeWidth="1.6"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <circle cx="6" cy="12" r="3" />
+    <circle cx="18" cy="5" r="3" />
+    <circle cx="18" cy="19" r="3" />
+    <path d="m8.7 10.6 6.6-3.9M8.7 13.4l6.6 3.9" />
+  </svg>
+);
 
 const actions = [
   {
@@ -18,9 +38,10 @@ const actions = [
     to: "/results",
   },
   {
-    label: <>Generar<br />con IA</>,
+    label: <>Compartir<br />examen</>,
     tone: "lime",
-    image: "/Ai_generar.png",
+    icon: <ShareGlyph />,
+    action: "share",
   },
 ];
 
@@ -38,6 +59,7 @@ const arrowTones = {
 
 export function HomePage() {
   const { teacher } = useAuthStore();
+  const [shareOpen, setShareOpen] = useState(false);
 
   return (
     <main className="relative isolate flex min-h-screen flex-col overflow-hidden bg-[#fbfbf6] text-[#005638] [background-image:radial-gradient(circle_at_0%_0%,#e1efdc_0,transparent_22%)] lg:h-screen lg:min-h-[680px]">
@@ -62,14 +84,25 @@ export function HomePage() {
           <nav className="flex flex-col gap-3 sm:gap-4 lg:gap-[clamp(10px,2vh,26px)]" aria-label="Acciones principales">
             {actions.map((action, index) => {
               const Action = action.to ? Link : "button";
+              const handleClick =
+                action.action === "share" ? () => setShareOpen(true) : undefined;
+
               return (
                 <Action
                   key={index}
-                  {...(action.to ? { to: action.to } : { type: "button" })}
+                  {...(action.to
+                    ? { to: action.to }
+                    : { type: "button", onClick: handleClick })}
                   className={`group grid min-h-[88px] w-full grid-cols-[64px_minmax(0,1fr)_42px] items-center gap-3 rounded-[28px] px-4 py-3 text-left transition duration-200 hover:-translate-y-1 hover:brightness-105 focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-[#9bc53d] sm:min-h-[105px] sm:grid-cols-[85px_minmax(0,1fr)_48px] sm:gap-4 sm:px-6 sm:py-4 lg:min-h-[clamp(84px,14vh,155px)] lg:grid-cols-[minmax(80px,125px)_1fr_64px] lg:gap-[clamp(12px,2vw,28px)] lg:rounded-full lg:px-[clamp(20px,3vw,42px)] lg:py-[clamp(8px,1.6vh,16px)] ${actionTones[action.tone]}`}
                 >
                   <span className="grid place-items-center">
-                    <img src={action.image} alt="" className="block h-auto w-[56px] max-h-[65px] object-contain sm:w-[78px] sm:max-h-[78px] lg:w-full lg:max-w-[125px] lg:max-h-[clamp(52px,8.5vh,110px)]" />
+                    {action.image ? (
+                      <img src={action.image} alt="" className="block h-auto w-[56px] max-h-[65px] object-contain sm:w-[78px] sm:max-h-[78px] lg:w-full lg:max-w-[125px] lg:max-h-[clamp(52px,8.5vh,110px)]" />
+                    ) : (
+                      <span className="grid h-[56px] w-[56px] place-items-center text-[#005638] sm:h-[78px] sm:w-[78px] lg:h-[clamp(52px,8.5vh,110px)] lg:w-[clamp(52px,8.5vh,110px)]">
+                        {action.icon}
+                      </span>
+                    )}
                   </span>
                   <span className="text-[clamp(19px,5vw,26px)] font-extrabold leading-[1.12] sm:text-[26px] lg:text-[clamp(21px,2.1vw,32px)]">{action.label}</span>
                   <span className={`grid h-10 w-10 place-items-center justify-self-end rounded-full text-2xl transition-transform group-hover:translate-x-1 sm:h-12 sm:w-12 sm:text-3xl lg:h-[clamp(48px,5vw,66px)] lg:w-[clamp(48px,5vw,66px)] lg:text-[43px] ${arrowTones[action.tone]}`} aria-hidden="true">
@@ -82,6 +115,7 @@ export function HomePage() {
         </div>
       </section>
 
+      <ShareExamModal open={shareOpen} onClose={() => setShareOpen(false)} />
     </main>
   );
 }

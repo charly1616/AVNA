@@ -22,6 +22,27 @@ export const activityIdSchema = z.object({
   id: z.string().regex(/^[a-f\d]{24}$/i, "Invalid activity id"),
 }).strict();
 
+export const activityAttemptResultSchema = z
+  .object({
+    id: z.string().regex(/^[a-f\d]{24}$/i, "Invalid activity id"),
+    attemptId: z.string().regex(/^[a-f\d]{24}$/i, "Invalid attempt id"),
+  })
+  .strict();
+
+export const activityAttemptAnswerResultSchema = z
+  .object({
+    id: z.string().regex(/^[a-f\d]{24}$/i, "Invalid activity id"),
+    attemptId: z.string().regex(/^[a-f\d]{24}$/i, "Invalid attempt id"),
+    questionId: z.string().trim().min(1).max(80),
+  })
+  .strict();
+
+export const updateResultAnswerSchema = z
+  .object({
+    isCorrect: z.boolean(),
+  })
+  .strict();
+
 export const listActivitiesQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),

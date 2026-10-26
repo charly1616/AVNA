@@ -4,6 +4,7 @@ import RootLayout from "./components/layout/RootLayout.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import ManagePage from "./pages/ManagePage.jsx";
 import EditActivityPage from "./pages/EditActivityPage.jsx";
+import ResultsPage from "./pages/ResultsPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
 import { ProtectedRoute, RedirectIfAuthenticated } from "./components/routes/AuthRoutes.jsx";
@@ -25,6 +26,10 @@ const router = createBrowserRouter([
       {
         path: "manage",
         element: <ManagePage />,
+      },
+      {
+        path: "results",
+        element: <ResultsPage />,
       },
       {
         path: "manage/:activityId/edit",

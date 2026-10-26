@@ -6,6 +6,7 @@ import { resolveActivityCode } from "./activityLink.js";
 import studentService from "./student.service.js";
 import { buildQuizSnapshot, toPublicQuestion, toPublicQuestions } from "./quizSnapshot.js";
 import { gradeAll, gradeAnswer } from "./quizGrading.js";
+import { verifyAnswer } from "./answerVerifier.service.js";
 
 class HttpError extends Error {
   constructor(status, message) {
@@ -263,6 +264,63 @@ export const attemptService = {
     }
 
     return attempt.questions.find((question) => question.id === questionId) ?? null;
+  },
+
+  /**
+   * Checks a free-text answer against the expected answer stored in the
+   * database, using the external answer-equivalence service. Only "concepts"
+   * questions have free text; the other types are graded deterministically.
+   */
+  async checkAnswer(code, { questionId, cardId, answer }) {
+    const { questions } = await this.getActivityDocument(code);
+    const question = questions.find((item) => item.id === questionId);
+
+    if (!question) throw new HttpError(404, "Question not found in this activity");
+
+    if (question.type !== "concepts") {
+      throw new HttpError(400, "Only concept answers can be checked with this endpoint");
+    }
+
+    const cards = question.cards ?? [];
+    const card = cardId
+      ? cards.find((item) => item.id === cardId)
+      : cards.length === 1
+        ? cards[0]
+        : null;
+
+    if (!card) {
+      throw new HttpError(
+        400,
+        cardId ? "Concept card not found in this question" : "Indicate the concept card id"
+      );
+    }
+
+    const expectedAnswer = question.correct?.answers?.[card.id] ?? "";
+
+    if (!expectedAnswer.trim()) {
+      return {
+        questionId,
+        cardId: card.id,
+        correct: true,
+        confidence: null,
+        expectedAnswer: "",
+        verifiedBy: "self",
+      };
+    }
+
+    const verdict = await verifyAnswer({
+      question: card.question?.text || card.title || question.title || "Respuesta",
+      expectedAnswer,
+      answer,
+    });
+
+    return {
+      questionId,
+      cardId: card.id,
+      correct: verdict.correct,
+      confidence: verdict.confidence,
+      verifiedBy: "model",
+    };
   },
 };
 

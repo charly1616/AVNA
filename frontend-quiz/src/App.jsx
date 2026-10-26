@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import quizService from "@/api/quiz.service";
+import AppShell from "@/components/AppShell";
 import ErrorScreen from "@/components/ErrorScreen";
 import LandingScreen from "@/components/LandingScreen";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -22,6 +23,7 @@ export default function App() {
   const [attempt, setAttempt] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
+  const [checks, setChecks] = useState({});
   const [index, setIndex] = useState(0);
   const [result, setResult] = useState(null);
 
@@ -90,6 +92,16 @@ export default function App() {
           next[questionNumber - 1] = payload.question;
           return next;
         });
+        setAnswers((current) => {
+          const loaded = payload.question;
+          if (loaded.type === "sort" && !current[loaded.id]) {
+            return {
+              ...current,
+              [loaded.id]: { order: loaded.items.map((item) => item.id) },
+            };
+          }
+          return current;
+        });
         return payload.question;
       } catch (error) {
         setFormError(errorMessage(error, "No se pudo cargar la pregunta."));
@@ -107,6 +119,7 @@ export default function App() {
     setResult(null);
     setQuestions([]);
     setAnswers({});
+    setChecks({});
     setIndex(0);
   }
 
@@ -134,6 +147,7 @@ export default function App() {
 
       setAttempt(started);
       setAnswers({});
+      setChecks({});
       setIndex(0);
       setResult(null);
       await loadQuestion(1);
@@ -146,6 +160,46 @@ export default function App() {
 
   function handleChange(questionId, value) {
     setAnswers((current) => ({ ...current, [questionId]: value }));
+    setChecks((current) => {
+      if (!current[questionId]) return current;
+      const next = { ...current };
+      delete next[questionId];
+      return next;
+    });
+  }
+
+  /**
+   * Concept answers are free text, so they are checked by the answer
+   * verification service. The verdicts are only informative: saving the
+   * attempt never waits for them and never fails because of them.
+   */
+  async function checkConceptAnswers(question, value) {
+    const cards = (value?.cards ?? []).filter((card) => card.text?.trim());
+    if (cards.length === 0) return;
+
+    const verdicts = await Promise.allSettled(
+      cards.map((card) =>
+        quizService.checkAnswer(slug, {
+          questionId: question.id,
+          cardId: card.cardId,
+          answer: card.text.trim(),
+        })
+      )
+    );
+
+    const byCard = {};
+    verdicts.forEach((verdict) => {
+      if (verdict.status === "fulfilled" && verdict.value) {
+        byCard[verdict.value.cardId] = verdict.value;
+      }
+    });
+
+    if (Object.keys(byCard).length === 0) return;
+
+    setChecks((current) => ({
+      ...current,
+      [question.id]: { ...(current[question.id] ?? {}), ...byCard },
+    }));
   }
 
   async function saveCurrentAnswer() {
@@ -170,6 +224,11 @@ export default function App() {
         questionNumber: question.number,
         value,
       });
+
+      if (question.type === "concepts") {
+        void checkConceptAnswers(question, value);
+      }
+
       return true;
     } catch (error) {
       setFormError(errorMessage(error, "No se pudo guardar la respuesta."));
@@ -212,6 +271,7 @@ export default function App() {
     setResult(null);
     setQuestions([]);
     setAnswers({});
+    setChecks({});
     setIndex(0);
     setFormError("");
   }
@@ -244,7 +304,14 @@ export default function App() {
   }
 
   if (result) {
-    return <ResultsScreen result={result} questions={questions} onRestart={handleRestart} />;
+    return (
+      <ResultsScreen
+        result={result}
+        questions={questions}
+        activity={activity}
+        onRestart={handleRestart}
+      />
+    );
   }
 
   if (!attempt) {
@@ -264,20 +331,9 @@ export default function App() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4" style={{ "--brand": activity.color }}>
-      <div className="w-full max-w-xl">
-        <div className="mb-6 h-3 overflow-hidden rounded-full bg-[var(--line)]">
-          <div
-            className="h-full rounded-full bg-[var(--brand)] transition-all"
-            style={{ width: `${(number / total) * 100}%` }}
-          />
-        </div>
-
-        {formError && (
-          <p className="mb-4 rounded-lg bg-red-50 px-4 py-2 text-sm font-semibold text-[var(--red)]">
-            {formError}
-          </p>
-        )}
+    <AppShell current={number} total={total} activity={activity}>
+      <div className="card-wrapper">
+        {formError && <p className="form-alert">{formError}</p>}
 
         <QuestionCard
           key={question.id}
@@ -286,11 +342,12 @@ export default function App() {
           total={total}
           value={answers[question.id]}
           onChange={(value) => handleChange(question.id, value)}
+          checks={checks[question.id] ?? null}
           onNext={handleNext}
           onFinish={handleFinish}
           busy={busy}
         />
       </div>
-    </div>
+    </AppShell>
   );
 }

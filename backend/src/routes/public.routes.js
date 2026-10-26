@@ -9,6 +9,7 @@ import {
   activityCodeSchema,
   activityQuestionSchema,
   attemptIdSchema,
+  checkAnswerSchema,
   logAnswerSchema,
   startAttemptSchema,
 } from "../validators/attempt.validator.js";
@@ -53,6 +54,13 @@ router.get(
   "/activities/:code/questions/:number",
   validate(activityQuestionSchema, "params"),
   asyncHandler(attemptController.getQuestion)
+);
+
+router.post(
+  "/activities/:code/answers/check",
+  validate(activityCodeSchema, "params"),
+  validate(checkAnswerSchema),
+  asyncHandler(attemptController.checkAnswer)
 );
 
 router.post(

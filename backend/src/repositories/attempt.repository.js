@@ -15,6 +15,13 @@ export const attemptRepository = {
       .select("-questions -answers");
   },
 
+  findByActivity(activityId, { status } = {}) {
+    const filter = { activity: activityId };
+    if (status) filter.status = status;
+
+    return Attempt.find(filter).sort({ createdAt: -1 });
+  },
+
   async save(attempt) {
     return attempt.save();
   },

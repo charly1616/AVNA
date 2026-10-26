@@ -47,3 +47,11 @@ export const getAttempt = async (req, res) => {
   );
   res.status(200).json({ attempt });
 };
+
+export const checkAnswer = async (req, res) => {
+  const result = await attemptService.checkAnswer(
+    req.validated.params.code,
+    req.body
+  );
+  res.status(200).json({ result });
+};

@@ -58,6 +58,14 @@ export const quizService = {
     );
     return data.result;
   },
+
+  async checkAnswer(slug, { questionId, cardId, answer }) {
+    const { data } = await api.post(
+      `/public/activities/${encodeURIComponent(slug)}/answers/check`,
+      { questionId, cardId, answer }
+    );
+    return data.result;
+  },
 };
 
 export default quizService;

@@ -15,6 +15,7 @@ const actions = [
     label: <>Ver<br />resultados</>,
     tone: "yellow",
     image: "/Resultadito.png",
+    to: "/results",
   },
   {
     label: <>Generar<br />con IA</>,

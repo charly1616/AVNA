@@ -114,3 +114,15 @@ export const logAnswerSchema = z
 export const attemptIdSchema = z.object({
   attemptId: z.string().regex(/^[a-f\d]{24}$/i, "Invalid attempt id"),
 }).strict();
+
+export const checkAnswerSchema = z
+  .object({
+    questionId: z.string().trim().min(1, "Question id is required").max(80),
+    cardId: z.string().trim().min(1).max(80).optional(),
+    answer: z
+      .string()
+      .trim()
+      .min(1, "La respuesta no puede estar vacía")
+      .max(2500, "La respuesta es demasiado larga"),
+  })
+  .strict();

@@ -58,6 +58,11 @@ export const ENV = {
   // Where the public quiz app is served. The share link teachers copy points here.
   quizAppUrl: optional("QUIZ_APP_URL", "http://localhost:5176"),
 
+  // The separate answer-verification service (backend_model, FastAPI).
+  verifierServiceHost: optional("VERIFIER_SERVICE_HOST", "127.0.0.1"),
+  verifierServicePort: toNumber(process.env.VERIFIER_SERVICE_PORT, 8888),
+  verifierServiceTimeoutMs: toNumber(process.env.VERIFIER_SERVICE_TIMEOUT_MS, 15000),
+
   jwtSecret: required("JWT_SECRET", { devFallback: "dev-only-insecure-secret" }),
   jwtExpiresIn: optional("JWT_EXPIRES_IN", "7d"),
   activityLinkSecret: required("ACTIVITY_LINK_SECRET", { devFallback: "dev-only-insecure-activity-link-secret" }),

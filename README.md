@@ -1,4 +1,4 @@
-﻿# TeacherPortal (Template)
+# TeacherPortal (Template)
 
 Minimal, modular template for a **teacher login/register + home** page.
 
@@ -100,8 +100,8 @@ npm run seed --prefix backend
 Use MongoDB Atlas (paste connection string in `MONGODB_URI`) or local `mongodb://127.0.0.1:27017/teacher_portal`.
 
 ## Environment variables
-See `backend/.env.example`, `frontend/.env.example`, `frontend-quiz/.env.example` and
-`backend_model/.env.example` for every required value. Set `ACTIVITY_LINK_SECRET` to a long,
+See `backend/.env.example`, `frontend/.env.example` and `frontend-quiz/.env.example` for every
+required value. Set `ACTIVITY_LINK_SECRET` to a long,
 random secret in production; it is used only by the backend to generate hashed activity links
 and must never be included in frontend code. All env access is centralized in
 `backend/src/config/env.js`.
@@ -124,9 +124,11 @@ public quiz link plus a QR code that can be copied or downloaded. Share links ar
    `index.html` for `/a/<code>` links.
 4. **Start the API:** `npm start --prefix backend` (or run it under a process manager). Put it
    behind a reverse proxy that sets `X-Forwarded-For`; the app trusts one proxy in production.
-5. **Answer verifier:** deploy `backend_model` separately (see its `.env.example`) and set
-   `VERIFIER_SERVICE_HOST` / `VERIFIER_SERVICE_PORT` in the backend. Open-answer checks fail
-   gracefully when the verifier is unreachable.
+5. **Open-answer feedback:** set `GEMINI_API_KEY` in the backend (get one at
+   https://aistudio.google.com/apikey). `GEMINI_MODEL` defaults to `gemini-3.1-flash-lite`.
+   Gemini calls are queued serially. When the key is missing or the API fails, the quiz keeps
+   working and teachers can still correct open answers manually from the results page. The
+   old Python `backend_model` service is no longer required.
 6. **Frontend env:** set `VITE_API_BASE_URL=/api` when the portal is served by the same domain
    as the API, or the full API URL when they are separate. `VITE_API_KEY` must match the
    backend `API_KEY` when enabled.

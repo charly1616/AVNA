@@ -8,5 +8,6 @@ build/
 npm-debug.log*
 .DS_Store
 .vscode/
+.gitignore
 .idea/
 coverage/

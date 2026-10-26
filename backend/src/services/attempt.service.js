@@ -268,8 +268,8 @@ export const attemptService = {
 
   /**
    * Checks a free-text answer against the expected answer stored in the
-   * database, using the external answer-equivalence service. Only "concepts"
-   * questions have free text; the other types are graded deterministically.
+   * database using Gemini. Only "concepts" questions have free text; the
+   * other types are graded deterministically.
    */
   async checkAnswer(code, { questionId, cardId, answer }) {
     const { questions } = await this.getActivityDocument(code);
@@ -319,7 +319,7 @@ export const attemptService = {
       cardId: card.id,
       correct: verdict.correct,
       confidence: verdict.confidence,
-      verifiedBy: "model",
+      verifiedBy: "gemini",
     };
   },
 };

@@ -9,7 +9,7 @@ export const register = async (req, res) => {
   const { name, password } = req.body;
   const teacher = await authService.register({ name, password });
 
-  authService.setAuthCookie(res, teacher.id);
+  authService.setAuthCookie(req, res, teacher.id);
   res.status(201).json({ teacher });
 };
 
@@ -17,12 +17,12 @@ export const login = async (req, res) => {
   const { name, password } = req.body;
   const teacher = await authService.login({ name, password });
 
-  authService.setAuthCookie(res, teacher.id);
+  authService.setAuthCookie(req, res, teacher.id);
   res.status(200).json({ teacher });
 };
 
-export const logout = async (_req, res) => {
-  authService.clearAuthCookie(res);
+export const logout = async (req, res) => {
+  authService.clearAuthCookie(req, res);
   res.status(200).json({ message: "Logged out" });
 };
 

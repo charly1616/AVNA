@@ -22,13 +22,19 @@ const toPublicTeacher = (teacher) => ({
   createdAt: teacher.createdAt,
 });
 
-const cookieOptions = () => ({
-  httpOnly: true,
-  secure: ENV.cookie.secure,
-  sameSite: ENV.cookie.sameSite,
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days, aligned with JWT_EXPIRES_IN default
-  path: "/",
-});
+const cookieOptions = (req) => {
+  const secure = req ? req.secure : ENV.cookie.secure;
+
+  return {
+    httpOnly: true,
+    secure,
+    // SameSite=None is only valid together with Secure. Over plain HTTP
+    // (local dev / Vite proxy) fall back to Lax so the browser keeps the cookie.
+    sameSite: secure ? "none" : "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days, aligned with JWT_EXPIRES_IN default
+    path: "/",
+  };
+};
 
 export const authService = {
   HttpError,
@@ -71,12 +77,12 @@ export const authService = {
     });
   },
 
-  setAuthCookie(res, teacherId) {
-    res.cookie(ENV.cookie.name, this.signToken(teacherId), cookieOptions());
+  setAuthCookie(req, res, teacherId) {
+    res.cookie(ENV.cookie.name, this.signToken(teacherId), cookieOptions(req));
   },
 
-  clearAuthCookie(res) {
-    res.clearCookie(ENV.cookie.name, { ...cookieOptions(), maxAge: undefined });
+  clearAuthCookie(req, res) {
+    res.clearCookie(ENV.cookie.name, { ...cookieOptions(req), maxAge: undefined });
   },
 
   verifyToken(token) {

@@ -30,28 +30,11 @@ app.use(express.json({ limit: "5mb" }));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-// CORS - httpOnly cookies require `credentials: true`
+// CORS - httpOnly cookies require `credentials: true`.
+// `origin: true` reflects any request origin, allowing all clients.
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin) {
-        callback(null, true);
-        return;
-      }
-
-      const allowedOrigins = new Set(ENV.clientUrls);
-      const localhostPattern = /^http:\/\/(localhost|127\.0\.0\.1):\d+$/i;
-      const isLocalhost = !ENV.isProduction && localhostPattern.test(origin);
-
-      if (allowedOrigins.has(origin.replace(/\/+$/, "")) || isLocalhost) {
-        callback(null, true);
-        return;
-      }
-
-      const error = new Error("Not allowed by CORS");
-      error.status = 403;
-      callback(error);
-    },
+    origin: true,
     credentials: true,
     optionsSuccessStatus: 200,
   })

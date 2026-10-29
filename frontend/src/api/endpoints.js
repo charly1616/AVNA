@@ -1,6 +1,6 @@
 // In a modular, extensible app, API calls are centralized.
 // Change the base path here if you rename the API prefix.
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000/api";
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 
 // Auth endpoints - only the ones required for Login/Register and session check.
 export const AUTH_ENDPOINTS = {

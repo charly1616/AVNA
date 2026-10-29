@@ -25,7 +25,7 @@ export const requireAuth = async (req, res, next) => {
     next();
   } catch {
     // Expired or tampered token.
-    authService.clearAuthCookie(res);
+    authService.clearAuthCookie(req, res);
     return res.status(401).json({ message: "Not authenticated" });
   }
 };

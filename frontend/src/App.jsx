@@ -1,68 +1,16 @@
-import { useEffect } from "react";
-import { createBrowserRouter, RouterProvider } from "react-router";
-import RootLayout from "./components/layout/RootLayout.jsx";
-import HomePage from "./pages/HomePage.jsx";
-import ManagePage from "./pages/ManagePage.jsx";
-import EditActivityPage from "./pages/EditActivityPage.jsx";
-import ResultsPage from "./pages/ResultsPage.jsx";
-import LoginPage from "./pages/LoginPage.jsx";
-import RegisterPage from "./pages/RegisterPage.jsx";
-import { ProtectedRoute, RedirectIfAuthenticated } from "./components/routes/AuthRoutes.jsx";
-import { useAuthStore } from "./store/useAuthStore.js";
+import { RouterProvider } from "react-router";
+import { Providers } from "./app/providers.jsx";
+import { router } from "./app/router.jsx";
 
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: (
-      <ProtectedRoute>
-        <RootLayout />
-      </ProtectedRoute>
-    ),
-    children: [
-      {
-        index: true,
-        element: <HomePage />,
-      },
-      {
-        path: "manage",
-        element: <ManagePage />,
-      },
-      {
-        path: "results",
-        element: <ResultsPage />,
-      },
-      {
-        path: "manage/:activityId/edit",
-        element: <EditActivityPage />,
-      },
-    ],
-  },
-  {
-    path: "/login",
-    element: (
-      <RedirectIfAuthenticated>
-        <LoginPage />
-      </RedirectIfAuthenticated>
-    ),
-  },
-  {
-    path: "/register",
-    element: (
-      <RedirectIfAuthenticated>
-        <RegisterPage />
-      </RedirectIfAuthenticated>
-    ),
-  },
-]);
-
-function App() {
-  const checkAuth = useAuthStore((state) => state.checkAuth);
-
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
-
-  return <RouterProvider router={router} />;
+/**
+ * Application root.
+ * - Providers: TanStack Query client + auth bootstrap.
+ * - RouterProvider: feature-composed router.
+ */
+export default function App() {
+  return (
+    <Providers>
+      <RouterProvider router={router} />
+    </Providers>
+  );
 }
-
-export default App;
